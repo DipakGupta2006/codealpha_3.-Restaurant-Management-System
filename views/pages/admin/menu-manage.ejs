@@ -1,0 +1,115 @@
+<%- include('../../partials/admin-header') %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark);">Menu Management</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Add dishes, update pricing, and toggle instant item availability</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addMenuItemModal')">+ Add New Dish</button>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">All Menu Items (<%= menuItems.length %> items)</div>
+  </div>
+  <div class="admin-card-body" style="padding: 0;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Dish</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Prep Time</th>
+          <th>Availability</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% menuItems.forEach(item => { %>
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="<%= item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100' %>" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover;">
+                <div>
+                  <strong><%= item.name %></strong>
+                  <div style="font-size: 0.8rem; color: #64748b; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <%= item.description %>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td><%= item.category_name %></td>
+            <td style="font-weight: 700; color: var(--primary);">$<%= item.price.toFixed(2) %></td>
+            <td>⏱️ <%= item.prep_time_minutes %> mins</td>
+            <td>
+              <button class="btn btn-sm <%= item.is_available ? 'btn-success' : 'btn-danger' %>" 
+                      onclick="toggleMenuItemAvailability(<%= item.id %>, <%= item.is_available %>)" 
+                      title="Click to toggle availability">
+                <%= item.is_available ? '✓ In Stock' : '✕ Unavailable' %>
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="deleteMenuItem(<%= item.id %>, '<%= item.name.replace(/'/g, "\\'") %>')">
+                Delete
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Menu Item Modal -->
+<div id="addMenuItemModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New Dish to Menu</h3>
+      <button class="modal-close" onclick="closeModal('addMenuItemModal')">&times;</button>
+    </div>
+    <form id="addMenuItemForm" onsubmit="submitNewMenuItem(event)">
+      <div class="form-group">
+        <label class="form-label" for="menuCat">Category *</label>
+        <select id="menuCat" name="categoryId" class="form-control" required>
+          <% categories.forEach(cat => { %>
+            <option value="<%= cat.id %>"><%= cat.icon %> <%= cat.name %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="dishName">Dish Name *</label>
+        <input type="text" id="dishName" name="name" class="form-control" placeholder="e.g. Truffle Mushroom Risotto" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="dishPrice">Price ($ USD) *</label>
+          <input type="number" step="0.01" id="dishPrice" name="price" class="form-control" placeholder="14.99" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="dishPrep">Prep Time (Mins) *</label>
+          <input type="number" id="dishPrep" name="prepTimeMinutes" class="form-control" value="15" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="dishDesc">Description</label>
+        <textarea id="dishDesc" name="description" class="form-control" rows="2" placeholder="Brief enticing flavor notes and ingredients..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="dishImg">Image URL</label>
+        <input type="url" id="dishImg" name="imageUrl" class="form-control" placeholder="https://images.unsplash.com/...">
+        <small style="color: #64748b; font-size: 0.78rem;">Leave blank to use default appetizing food image</small>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addMenuItemModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Dish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

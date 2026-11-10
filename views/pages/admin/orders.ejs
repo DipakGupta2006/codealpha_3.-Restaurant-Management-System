@@ -1,0 +1,107 @@
+<%- include('../../partials/admin-header') %>
+
+<!-- Status Filter Tabs -->
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;">
+  <a href="/admin/orders" class="filter-btn <%= filterStatus === 'all' ? 'active' : '' %>">All Orders</a>
+  <a href="/admin/orders?status=pending" class="filter-btn <%= filterStatus === 'pending' ? 'active' : '' %>">⏳ Pending</a>
+  <a href="/admin/orders?status=in-preparation" class="filter-btn <%= filterStatus === 'in-preparation' ? 'active' : '' %>">🔥 In Kitchen</a>
+  <a href="/admin/orders?status=ready" class="filter-btn <%= filterStatus === 'ready' ? 'active' : '' %>">🍽️ Ready to Serve</a>
+  <a href="/admin/orders?status=served" class="filter-btn <%= filterStatus === 'served' ? 'active' : '' %>">✅ Served</a>
+  <a href="/admin/orders?status=completed" class="filter-btn <%= filterStatus === 'completed' ? 'active' : '' %>">🏁 Completed</a>
+</div>
+
+<!-- Order Tickets Grid -->
+<% if (orders.length === 0) { %>
+  <div style="background: #fff; border-radius: 12px; padding: 60px 20px; text-align: center; border: 1px dashed var(--border);">
+    <div style="font-size: 3rem; margin-bottom: 12px;">🍳</div>
+    <h3 style="color: var(--dark); margin-bottom: 6px;">No orders found</h3>
+    <p style="color: var(--text-muted);">There are no orders matching the selected filter right now.</p>
+  </div>
+<% } else { %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+    <% orders.forEach(order => { %>
+      <div class="order-ticket" style="display: flex; flex-direction: column;">
+        <!-- Ticket Header -->
+        <div class="order-ticket-header">
+          <div>
+            <div class="order-number">#<%= order.order_number %></div>
+            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+              <%= new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %> • 
+              <strong><%= order.order_type.toUpperCase() %></strong>
+              <%= order.table_number ? ` (Table #${order.table_number})` : '' %>
+            </div>
+          </div>
+          <span class="badge badge-<%= order.status %>"><%= order.status.replace('-', ' ') %></span>
+        </div>
+
+        <!-- Customer details -->
+        <div style="font-size: 0.88rem; margin-bottom: 10px; color: #334155;">
+          👤 <strong><%= order.customer_name %></strong> <%= order.customer_phone ? `(${order.customer_phone})` : '' %>
+        </div>
+
+        <!-- Notes if any -->
+        <% if (order.notes) { %>
+          <div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 6px 10px; border-radius: 4px; font-size: 0.82rem; color: #92400e; margin-bottom: 10px;">
+            📝 <%= order.notes %>
+          </div>
+        <% } %>
+
+        <!-- Items list -->
+        <ul class="order-items-list" style="flex: 1;">
+          <% (order.items || []).forEach(item => { %>
+            <li>
+              <span><strong><%= item.quantity %>×</strong> <%= item.item_name %></span>
+              <span style="font-weight: 600;">$<%= item.subtotal.toFixed(2) %></span>
+            </li>
+          <% }) %>
+        </ul>
+
+        <!-- Ticket Footer & Totals -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <span style="font-size: 0.8rem; color: #64748b;">PAYMENT: </span>
+            <span style="font-weight: 700; font-size: 0.85rem; color: <%= order.payment_status === 'paid' ? 'var(--success)' : '#d97706' %>; text-transform: uppercase;">
+              <%= order.payment_status %> (<%= order.payment_method %>)
+            </span>
+          </div>
+          <div style="font-size: 1.15rem; font-weight: 800; color: var(--dark);">$<%= order.total_amount.toFixed(2) %></div>
+        </div>
+
+        <!-- Action Controls -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; pt: 10px; border-top: 1px solid #f1f5f9;">
+          <% if (order.status === 'pending') { %>
+            <button class="btn btn-sm btn-primary" style="flex: 1;" onclick="updateOrderStatus(<%= order.id %>, 'in-preparation')">
+              🔥 Start Cooking
+            </button>
+          <% } else if (order.status === 'in-preparation') { %>
+            <button class="btn btn-sm btn-success" style="flex: 1;" onclick="updateOrderStatus(<%= order.id %>, 'ready')">
+              ✅ Mark Ready
+            </button>
+          <% } else if (order.status === 'ready') { %>
+            <button class="btn btn-sm btn-primary" style="flex: 1;" onclick="updateOrderStatus(<%= order.id %>, 'served')">
+              🍽️ Mark Served
+            </button>
+          <% } else if (order.status === 'served') { %>
+            <button class="btn btn-sm btn-success" style="flex: 1;" onclick="updateOrderStatus(<%= order.id %>, 'completed')">
+              🏁 Complete & Free Table
+            </button>
+          <% } %>
+
+          <% if (order.payment_status !== 'paid') { %>
+            <button class="btn btn-sm btn-secondary" onclick="markOrderPaid(<%= order.id %>)" title="Mark Paid">
+              💵 Paid
+            </button>
+          <% } %>
+
+          <% if (!['completed', 'cancelled'].includes(order.status)) { %>
+            <button class="btn btn-sm btn-danger" onclick="updateOrderStatus(<%= order.id %>, 'cancelled')" title="Cancel Order">
+              ✕
+            </button>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../../partials/admin-footer') %>

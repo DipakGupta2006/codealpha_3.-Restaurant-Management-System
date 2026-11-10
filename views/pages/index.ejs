@@ -1,0 +1,95 @@
+<%- include('../partials/header') %>
+
+<!-- Hero Banner -->
+<section class="hero">
+  <div class="container">
+    <h1>Artisanal Flavors, Unmatched Dining</h1>
+    <p>
+      Experience exquisite cuisine crafted from farm-fresh local produce, wood-fired hearths, and centuries of culinary passion.
+    </p>
+    <div class="hero-actions">
+      <a href="/reserve" class="btn btn-primary" style="padding: 12px 28px; font-size: 1.05rem;">Reserve a Table 🪑</a>
+      <a href="/menu" class="btn btn-outline" style="background: rgba(255,255,255,0.1); border-color: #fff; color: #fff; padding: 12px 28px; font-size: 1.05rem;">Explore Full Menu 📖</a>
+      <a href="/order" class="btn btn-secondary" style="padding: 12px 28px; font-size: 1.05rem;">Order Online 🛒</a>
+    </div>
+  </div>
+</section>
+
+<!-- Highlights Section -->
+<section class="section" style="background: #fff; border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; text-align: center;">
+      <div style="padding: 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🔥</div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 6px; color: var(--dark);">Wood-Fired Hearth</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Authentic stone oven pizzas and charcoal-seared prime meats.</p>
+      </div>
+
+      <div style="padding: 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🌿</div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 6px; color: var(--dark);">Farm-To-Table</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Daily procured organic herbs, artisan cheese, and sustainable produce.</p>
+      </div>
+
+      <div style="padding: 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">⚡</div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 6px; color: var(--dark);">Live Order Tracking</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Track your kitchen preparation and service progress in real time.</p>
+      </div>
+
+      <div style="padding: 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🍷</div>
+        <h3 style="font-size: 1.15rem; margin-bottom: 6px; color: var(--dark);">Boutique Ambience</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted);">Comfortable bay windows, garden patio dining, and private booths.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Dishes -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>Chef's Signature Selections</h2>
+      <p>Hand-picked seasonal favorites prepared with precision and flair</p>
+    </div>
+
+    <div class="menu-grid">
+      <% featuredDishes.forEach(dish => { %>
+        <div class="menu-card">
+          <div class="menu-card-img-wrapper">
+            <img src="<%= dish.image_url %>" alt="<%= dish.name %>" class="menu-card-img">
+            <span class="menu-card-category-badge"><%= dish.category_name %></span>
+          </div>
+          <div class="menu-card-body">
+            <h3 class="menu-card-title"><%= dish.name %></h3>
+            <p class="menu-card-desc"><%= dish.description %></p>
+            <div class="menu-card-footer">
+              <span class="menu-card-price">$<%= dish.price.toFixed(2) %></span>
+              <button class="btn btn-sm btn-primary" onclick="addToCart({ id: <%= dish.id %>, name: '<%= dish.name.replace(/'/g, "\\'") %>', price: <%= dish.price %>, imageUrl: '<%= dish.image_url %>' })">
+                + Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px;">
+      <a href="/menu" class="btn btn-outline" style="padding: 12px 28px;">Browse All <%= stats.totalDishes %> Dishes →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="section" style="background: linear-gradient(rgba(18, 24, 32, 0.9), rgba(18, 24, 32, 0.9)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1600&auto=format&fit=crop&q=80') center/cover; color: #fff; text-align: center;">
+  <div class="container" style="max-width: 700px;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 12px;">Plan Your Perfect Evening</h2>
+    <p style="color: #cbd5e1; margin-bottom: 24px; font-size: 1.05rem;">
+      Whether it's an intimate date, a vibrant family gathering, or a business dinner, our <%= stats.totalTables %> curated dining tables are ready for you.
+    </p>
+    <a href="/reserve" class="btn btn-primary" style="padding: 12px 30px; font-size: 1rem;">Book Your Table Now 📅</a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

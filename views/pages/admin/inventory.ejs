@@ -1,0 +1,165 @@
+<%- include('../../partials/admin-header') %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark);">Kitchen Inventory & Ingredients</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Track stock levels, set low-stock thresholds, and trigger restocks</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addInventoryModal')">+ Add New Ingredient</button>
+</div>
+
+<!-- Low stock banner -->
+<% if (lowStockAlerts.length > 0) { %>
+  <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 18px 24px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h4 style="color: #991b1b; font-size: 1.05rem; margin-bottom: 4px;">⚠️ Low Stock Alert (<%= lowStockAlerts.length %> items below threshold)</h4>
+      <p style="color: #b91c1c; font-size: 0.88rem;">
+        The following items require immediate kitchen replenishment: 
+        <strong><%= lowStockAlerts.map(i => i.item_name).join(', ') %></strong>
+      </p>
+    </div>
+  </div>
+<% } %>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">All Stock Items (<%= inventory.length %> items)</div>
+  </div>
+  <div class="admin-card-body" style="padding: 0;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Ingredient Item</th>
+          <th>Category</th>
+          <th>Stock Level</th>
+          <th>Min Threshold</th>
+          <th>Unit Cost</th>
+          <th>Stock Health</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% inventory.forEach(item => { %>
+          <% 
+            const ratio = item.min_threshold > 0 ? (item.quantity / item.min_threshold) : 1;
+            let healthClass = 'healthy';
+            if (ratio <= 1.0) healthClass = 'danger';
+            else if (ratio <= 1.5) healthClass = 'warning';
+            const percentage = Math.min(100, Math.round(ratio * 50));
+          %>
+          <tr>
+            <td>
+              <strong><%= item.item_name %></strong>
+              <% if (item.is_low_stock) { %>
+                <span class="badge badge-cancelled" style="margin-left: 6px; font-size: 0.7rem;">LOW</span>
+              <% } %>
+            </td>
+            <td><%= item.category %></td>
+            <td>
+              <strong style="color: <%= item.is_low_stock ? '#dc2626' : '#15803d' %>; font-size: 1rem;">
+                <%= item.quantity %>
+              </strong> <%= item.unit %>
+            </td>
+            <td><%= item.min_threshold %> <%= item.unit %></td>
+            <td>$<%= (item.unit_cost || 0).toFixed(2) %></td>
+            <td style="min-width: 140px;">
+              <div style="font-size: 0.78rem; color: #64748b; margin-bottom: 2px;">
+                <%= item.quantity <= item.min_threshold ? 'Critical Stock' : 'Adequate' %>
+              </div>
+              <div class="stock-bar-wrapper">
+                <div class="stock-bar <%= healthClass %>" style="width: <%= percentage %>%;"></div>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="openRestockModal(<%= item.id %>, '<%= item.item_name.replace(/'/g, "\\'") %>', '<%= item.unit %>')">
+                + Restock
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Restock Inventory Modal -->
+<div id="restockModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Restock Ingredient</h3>
+      <button class="modal-close" onclick="closeModal('restockModal')">&times;</button>
+    </div>
+    <form id="restockForm" onsubmit="submitRestock(event)">
+      <div style="margin-bottom: 16px;">
+        Restocking ingredient: <strong id="restockItemName" style="color: var(--primary);"></strong>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="restockQuantity">
+          Additional Quantity to Add (<span id="restockUnitLabel"></span>) *
+        </label>
+        <input type="number" step="0.1" id="restockQuantity" class="form-control" placeholder="e.g. 10.0" required autofocus>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('restockModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm Restock</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Inventory Item Modal -->
+<div id="addInventoryModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New Inventory Ingredient</h3>
+      <button class="modal-close" onclick="closeModal('addInventoryModal')">&times;</button>
+    </div>
+    <form id="addInventoryForm" onsubmit="submitNewInventoryItem(event)">
+      <div class="form-group">
+        <label class="form-label" for="invName">Ingredient Name *</label>
+        <input type="text" id="invName" name="itemName" class="form-control" placeholder="e.g. Olive Oil, Ground Cinnamon" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="invCategory">Category *</label>
+          <select id="invCategory" name="category" class="form-control" required>
+            <option value="Produce">Produce & Greens</option>
+            <option value="Dairy">Dairy & Cheese</option>
+            <option value="Meat">Meat & Poultry</option>
+            <option value="Bakery">Bakery & Grains</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Spices & Pantry">Spices & Pantry</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="invUnit">Unit of Measure *</label>
+          <input type="text" id="invUnit" name="unit" class="form-control" placeholder="kg, liters, units..." required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="invQuantity">Initial Stock *</label>
+          <input type="number" step="0.1" id="invQuantity" name="quantity" class="form-control" placeholder="20" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="invMin">Low Stock Alert Level *</label>
+          <input type="number" step="0.1" id="invMin" name="minThreshold" class="form-control" placeholder="5" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="invCost">Unit Cost ($ USD)</label>
+        <input type="number" step="0.01" id="invCost" name="unitCost" class="form-control" placeholder="4.50">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addInventoryModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Ingredient</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

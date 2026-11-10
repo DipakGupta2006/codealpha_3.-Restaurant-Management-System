@@ -1,0 +1,82 @@
+<%- include('../../partials/admin-header') %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark);">Table Reservations Book</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Review guest bookings, table assignments, and seat guests</p>
+  </div>
+
+  <!-- Date Filter Form -->
+  <form method="GET" action="/admin/reservations" style="display: flex; gap: 8px; align-items: center;">
+    <input type="date" name="date" class="form-control" value="<%= filterDate %>" style="padding: 8px 12px; font-size: 0.88rem;">
+    <button type="submit" class="btn btn-sm btn-primary">Filter Date</button>
+  </form>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">Bookings for <%= filterDate %> (<%= reservations.length %> reservations)</div>
+    <a href="/reserve" target="_blank" class="btn btn-sm btn-secondary">+ Book Reservation</a>
+  </div>
+  <div class="admin-card-body" style="padding: 0;">
+    <% if (reservations.length === 0) { %>
+      <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+        No reservations scheduled for <%= filterDate %>.
+      </div>
+    <% } else { %>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Customer Name</th>
+            <th>Contact</th>
+            <th>Party Size</th>
+            <th>Table</th>
+            <th>Special Requests</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% reservations.forEach(res => { %>
+            <tr>
+              <td><strong style="font-size: 1rem;"><%= res.reservation_time %></strong></td>
+              <td><strong><%= res.customer_name %></strong></td>
+              <td style="font-size: 0.85rem;"><%= res.customer_phone %><br><span style="color: #94a3b8;"><%= res.customer_email || '' %></span></td>
+              <td>👥 <%= res.guest_count %> Guests</td>
+              <td>
+                <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.82rem;">
+                  Table #<%= res.table_number %> (<%= res.table_location %>)
+                </span>
+              </td>
+              <td style="font-size: 0.85rem; max-width: 180px;"><%= res.special_requests || '—' %></td>
+              <td>
+                <span class="badge badge-<%= res.status %>"><%= res.status %></span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <% if (res.status === 'confirmed') { %>
+                    <button class="btn btn-sm btn-success" onclick="updateReservationStatus(<%= res.id %>, 'seated')" title="Seat at Table">
+                      🪑 Seat
+                    </button>
+                  <% } else if (res.status === 'seated') { %>
+                    <button class="btn btn-sm btn-primary" onclick="updateReservationStatus(<%= res.id %>, 'completed')" title="Complete">
+                      ✓ Done
+                    </button>
+                  <% } %>
+                  <% if (res.status !== 'cancelled' && res.status !== 'completed') { %>
+                    <button class="btn btn-sm btn-danger" onclick="updateReservationStatus(<%= res.id %>, 'cancelled')" title="Cancel">
+                      ✕
+                    </button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

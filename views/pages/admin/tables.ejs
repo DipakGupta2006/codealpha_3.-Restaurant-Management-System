@@ -1,0 +1,109 @@
+<%- include('../../partials/admin-header') %>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+  <div>
+    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark);">Dining Room Floor Plan</h3>
+    <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time table occupancy, active bills, and guest seating status</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('addTableModal')">+ Add New Table</button>
+</div>
+
+<!-- Legend -->
+<div style="display: flex; gap: 20px; align-items: center; background: #fff; padding: 12px 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 24px; font-size: 0.88rem; font-weight: 600;">
+  <span style="color: #64748b;">LEGEND:</span>
+  <span style="display: flex; align-items: center; gap: 6px;">
+    <span style="width: 12px; height: 12px; background: #10b981; border-radius: 3px; display: inline-block;"></span> Available
+  </span>
+  <span style="display: flex; align-items: center; gap: 6px;">
+    <span style="width: 12px; height: 12px; background: #ef4444; border-radius: 3px; display: inline-block;"></span> Occupied (Dining)
+  </span>
+  <span style="display: flex; align-items: center; gap: 6px;">
+    <span style="width: 12px; height: 12px; background: #f59e0b; border-radius: 3px; display: inline-block;"></span> Reserved
+  </span>
+</div>
+
+<!-- Floor Plan Grid -->
+<div class="floor-grid">
+  <% tables.forEach(t => { %>
+    <div class="table-seat-card status-<%= t.status %>">
+      <div class="table-card-top">
+        <div class="table-number-label">Table #<%= t.table_number %></div>
+        <span class="badge badge-<%= t.status %>"><%= t.status %></span>
+      </div>
+
+      <div class="table-info-meta">
+        <div>📍 <%= t.location %></div>
+        <div>👥 Capacity: <strong><%= t.capacity %> Seats</strong></div>
+      </div>
+
+      <!-- Active Order Info if Occupied -->
+      <% if (t.status === 'occupied' && t.active_order_number) { %>
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px dashed #fca5a5; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; margin-bottom: 12px;">
+          <div>Active Order: <strong>#<%= t.active_order_number %></strong></div>
+          <div>Current Bill: <strong style="color: #b91c1c;">$<%= (t.active_order_amount || 0).toFixed(2) %></strong></div>
+        </div>
+      <% } else if (t.status === 'reserved' && t.upcoming_reservation_name) { %>
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px dashed #fde68a; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; margin-bottom: 12px;">
+          <div>Guest: <strong><%= t.upcoming_reservation_name %></strong></div>
+          <div>Time: <strong><%= t.upcoming_reservation_time %></strong></div>
+        </div>
+      <% } else { %>
+        <div style="font-size: 0.82rem; color: #15803d; margin-bottom: 12px; min-height: 40px; display: flex; align-items: center;">
+          ✓ Ready to seat walk-in guests
+        </div>
+      <% } %>
+
+      <!-- Quick Status Switch Buttons -->
+      <div style="display: flex; gap: 6px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 10px;">
+        <% if (t.status !== 'available') { %>
+          <button class="btn btn-sm btn-success" style="flex: 1;" onclick="updateTableStatus(<%= t.id %>, 'available')">
+            Mark Free
+          </button>
+        <% } %>
+        <% if (t.status !== 'occupied') { %>
+          <button class="btn btn-sm btn-danger" style="flex: 1;" onclick="updateTableStatus(<%= t.id %>, 'occupied')">
+            Seat Guest
+          </button>
+        <% } %>
+        <% if (t.status !== 'reserved') { %>
+          <button class="btn btn-sm btn-secondary" onclick="updateTableStatus(<%= t.id %>, 'reserved')" title="Mark Reserved">
+            Reserve
+          </button>
+        <% } %>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<!-- Add Table Modal -->
+<div id="addTableModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Add New Dining Table</h3>
+      <button class="modal-close" onclick="closeModal('addTableModal')">&times;</button>
+    </div>
+    <form id="addTableForm" onsubmit="submitNewTable(event)">
+      <div class="form-group">
+        <label class="form-label" for="tableNumber">Table Number *</label>
+        <input type="number" id="tableNumber" name="tableNumber" class="form-control" placeholder="e.g. 11" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="tableCapacity">Seating Capacity (Guests) *</label>
+        <input type="number" id="tableCapacity" name="capacity" class="form-control" placeholder="e.g. 4" min="1" max="20" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="tableLocation">Section / Floor Location *</label>
+        <input type="text" id="tableLocation" name="location" class="form-control" placeholder="e.g. Garden Patio, Indoor Main Hall" required>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addTableModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Table</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>

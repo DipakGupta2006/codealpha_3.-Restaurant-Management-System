@@ -1,0 +1,109 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+  <div class="section-header">
+    <h2>Our Culinary Menu</h2>
+    <p>Discover our chef-curated selection of handcrafted dishes, pizzas, and drinks</p>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div style="max-width: 600px; margin: 0 auto 30px;">
+    <div style="position: relative;">
+      <input type="text" id="menuSearchInput" class="form-control" placeholder="Search dishes, ingredients, or keywords..." style="padding-left: 42px; font-size: 1rem; border-radius: var(--radius-full);">
+      <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-muted);">🔍</span>
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div class="menu-filter-bar">
+    <button class="filter-btn active" data-category="all">🍽️ All Dishes</button>
+    <% categories.forEach(cat => { %>
+      <button class="filter-btn" data-category="<%= cat.name %>"><%= cat.icon %> <%= cat.name %></button>
+    <% }) %>
+  </div>
+
+  <!-- Menu Grid -->
+  <div class="menu-grid" id="menuItemsGrid">
+    <% menuItems.forEach(item => { %>
+      <div class="menu-card" data-category="<%= item.category_name %>" data-title="<%= item.name.toLowerCase() %>" data-desc="<%= (item.description || '').toLowerCase() %>">
+        <div class="menu-card-img-wrapper">
+          <img src="<%= item.image_url %>" alt="<%= item.name %>" class="menu-card-img" loading="lazy">
+          <span class="menu-card-category-badge"><%= item.category_icon || '🍽️' %> <%= item.category_name %></span>
+        </div>
+        <div class="menu-card-body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <h3 class="menu-card-title"><%= item.name %></h3>
+            <span style="font-size: 0.78rem; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; white-space: nowrap;">
+              ⏱️ <%= item.prep_time_minutes %>m
+            </span>
+          </div>
+          <p class="menu-card-desc"><%= item.description %></p>
+          <div class="menu-card-footer">
+            <span class="menu-card-price">$<%= item.price.toFixed(2) %></span>
+            <button class="btn btn-sm btn-primary" onclick="addToCart({ id: <%= item.id %>, name: '<%= item.name.replace(/'/g, "\\'") %>', price: <%= item.price %>, imageUrl: '<%= item.image_url %>' })">
+              + Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+  <div id="noMenuMatches" style="display: none; text-align: center; padding: 60px 20px;">
+    <div style="font-size: 3rem; margin-bottom: 12px;">🥗</div>
+    <h3 style="color: var(--dark); margin-bottom: 6px;">No dishes found</h3>
+    <p style="color: var(--text-muted);">Try a different keyword or select another category above.</p>
+  </div>
+</div>
+
+<script>
+  // Client-side menu live filtering & search
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('menuSearchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('#menuItemsGrid .menu-card');
+    const noMatches = document.getElementById('noMenuMatches');
+
+    let currentCategory = 'all';
+    let searchQuery = '';
+
+    function filterMenu() {
+      let visibleCount = 0;
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        const title = card.getAttribute('data-title');
+        const desc = card.getAttribute('data-desc');
+
+        const matchesCat = currentCategory === 'all' || cat === currentCategory;
+        const matchesSearch = !searchQuery || title.includes(searchQuery) || desc.includes(searchQuery);
+
+        if (matchesCat && matchesSearch) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      noMatches.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.getAttribute('data-category');
+        filterMenu();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        filterMenu();
+      });
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding-top: 40px; padding-bottom: 70px;">
+  <div class="section-header">
+    <h2>Book Your Table</h2>
+    <p>Reserve an unforgettable dining experience with real-time table availability</p>
+  </div>
+
+  <div style="max-width: 850px; margin: 0 auto; background: #fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 32px;">
+    <form id="reservationForm">
+      <div style="border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px;">
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 16px;">1. Select Date, Time & Party Size</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="resDate">Reservation Date *</label>
+            <input type="date" id="resDate" name="reservationDate" class="form-control" value="<%= today %>" min="<%= today %>" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="resTime">Preferred Time *</label>
+            <select id="resTime" name="reservationTime" class="form-control" required>
+              <option value="12:00">12:00 PM (Lunch)</option>
+              <option value="12:30">12:30 PM</option>
+              <option value="13:00">01:00 PM</option>
+              <option value="13:30">01:30 PM</option>
+              <option value="18:00">06:00 PM (Dinner)</option>
+              <option value="18:30">06:30 PM</option>
+              <option value="19:00" selected>07:00 PM</option>
+              <option value="19:30">07:30 PM</option>
+              <option value="20:00">08:00 PM</option>
+              <option value="20:30">08:30 PM</option>
+              <option value="21:00">09:00 PM</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="resGuests">Number of Guests *</label>
+            <select id="resGuests" name="guestCount" class="form-control" required>
+              <option value="1">1 Person</option>
+              <option value="2" selected>2 Persons</option>
+              <option value="3">3 Persons</option>
+              <option value="4">4 Persons</option>
+              <option value="5">5 Persons</option>
+              <option value="6">6 Persons</option>
+              <option value="8">8 Persons (VIP Booth)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Availability Results -->
+      <div style="margin-bottom: 28px;">
+        <label class="form-label" style="font-size: 1rem; margin-bottom: 12px;">2. Available Tables for this Slot</label>
+        <div id="availability-results" style="min-height: 80px;">
+          <!-- Dynamically populated by reservation.js -->
+        </div>
+      </div>
+
+      <!-- Customer Contact Details -->
+      <div style="border-top: 1px solid var(--border); padding-top: 24px; margin-bottom: 24px;">
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 16px;">3. Contact Information</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="resCustomerName">Full Name *</label>
+            <input type="text" id="resCustomerName" name="customerName" class="form-control" placeholder="e.g. Johnathan Smith" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="resCustomerPhone">Phone Number *</label>
+            <input type="tel" id="resCustomerPhone" name="customerPhone" class="form-control" placeholder="e.g. +1 555-0182" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="resCustomerEmail">Email Address (Optional)</label>
+          <input type="email" id="resCustomerEmail" name="customerEmail" class="form-control" placeholder="johnathan@example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="resSpecialRequests">Special Requests / Occasion</label>
+          <textarea id="resSpecialRequests" name="specialRequests" class="form-control" rows="2" placeholder="e.g. Birthday anniversary, high chair needed, window preference..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.05rem;">
+        Confirm Table Reservation 🥂
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Reservation Success Modal -->
+<div id="reservation-success-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Booking Confirmation</h3>
+      <button class="modal-close" onclick="closeModal('reservation-success-modal')">&times;</button>
+    </div>
+    <div id="reservation-success-details"></div>
+  </div>
+</div>
+
+<script src="/js/reservation.js"></script>
+
+<%- include('../partials/footer') %>

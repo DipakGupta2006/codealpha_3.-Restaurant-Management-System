@@ -1,0 +1,122 @@
+<%- include('../partials/header') %>
+
+<div class="container" style="padding-top: 40px; padding-bottom: 70px;">
+  <div class="section-header" style="text-align: left; margin-bottom: 30px;">
+    <h2>Order Online & Dine-In Checkout</h2>
+    <p>Review your selected dishes, choose your dining option, and send your ticket directly to the kitchen.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 35px; align-items: flex-start;">
+    <!-- Left Column: Cart Items -->
+    <div style="background: #fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--dark);">Your Order Items</h3>
+        <button class="btn btn-sm btn-secondary" onclick="clearCart()">Clear All</button>
+      </div>
+
+      <!-- Items List -->
+      <div id="cart-items-container"></div>
+
+      <!-- Empty State -->
+      <div id="cart-empty" style="text-align: center; padding: 40px 20px; display: none;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">🛒</div>
+        <h4 style="color: var(--dark); margin-bottom: 6px;">Your cart is empty</h4>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">You haven't selected any delicious dishes yet.</p>
+        <a href="/menu" class="btn btn-primary">Browse Menu & Add Items →</a>
+      </div>
+
+      <!-- Cart Summary -->
+      <div id="cart-summary" style="margin-top: 20px; padding-top: 16px; border-top: 2px dashed var(--border); display: none;">
+        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--dark);">
+          <span>Estimated Total:</span>
+          <span id="cart-total-amount" style="color: var(--primary);">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Checkout Form -->
+    <div style="background: #fff; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 24px;">
+      <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--dark); border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 20px;">
+        Customer & Dining Details
+      </h3>
+
+      <form id="checkoutForm">
+        <!-- Dining Type -->
+        <div class="form-group">
+          <label class="form-label" for="orderType">Order Type *</label>
+          <select id="orderType" name="orderType" class="form-control" required>
+            <option value="dine-in">Dine-In (Eating at a Table)</option>
+            <option value="takeaway">Takeaway (Pickup at Counter)</option>
+          </select>
+        </div>
+
+        <!-- Table Selection (Shown if dine-in) -->
+        <div class="form-group" id="tableSelectionGroup">
+          <label class="form-label" for="tableId">Select Dining Table *</label>
+          <select id="tableId" name="tableId" class="form-control">
+            <option value="">-- Choose your table --</option>
+            <% tables.forEach(t => { %>
+              <option value="<%= t.id %>">
+                Table #<%= t.table_number %> (<%= t.location %> - Seats <%= t.capacity %>)
+                <%= t.status !== 'available' ? `[Currently: ${t.status.toUpperCase()}]` : '✓ Available' %>
+              </option>
+            <% }) %>
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">
+            Check your physical table number or choose from available tables above.
+          </small>
+        </div>
+
+        <!-- Customer Name & Phone -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="customerName">Your Name *</label>
+            <input type="text" id="customerName" name="customerName" class="form-control" placeholder="e.g. John Doe" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="customerPhone">Phone Number</label>
+            <input type="tel" id="customerPhone" name="customerPhone" class="form-control" placeholder="e.g. +1 555-0192">
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-group">
+          <label class="form-label" for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod" name="paymentMethod" class="form-control">
+            <option value="cash">💵 Pay with Cash (at table / counter)</option>
+            <option value="card">💳 Credit / Debit Card (at counter)</option>
+            <option value="online">📱 Online UPI / Mobile Payment</option>
+          </select>
+        </div>
+
+        <!-- Special Requests / Notes -->
+        <div class="form-group">
+          <label class="form-label" for="notes">Kitchen Notes / Dietary Requests</label>
+          <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="e.g. Extra spicy, dressing on the side, allergy to nuts..."></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.05rem;">
+          Place Order & Route to Kitchen 🚀
+        </button>
+
+        <div style="font-size: 0.82rem; color: #64748b; text-align: center; margin-top: 12px;">
+          🔒 Inventory auto-updates and stock validation occurs automatically upon submission.
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Order Confirmation Modal -->
+<div id="order-success-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Receipt & Tracking</h3>
+      <button class="modal-close" onclick="closeModal('order-success-modal')">&times;</button>
+    </div>
+    <div id="order-success-details"></div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

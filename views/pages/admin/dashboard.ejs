@@ -1,0 +1,181 @@
+<%- include('../../partials/admin-header') %>
+
+<!-- KPI Metric Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon orange">💵</div>
+    <div class="stat-details">
+      <h4>Today's Sales</h4>
+      <div class="stat-value">$<%= stats.todayRevenue %></div>
+      <div class="stat-sub"><%= stats.todayOrders %> orders today</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon blue">🍳</div>
+    <div class="stat-details">
+      <h4>Kitchen Queue</h4>
+      <div class="stat-value"><%= stats.activeOrders %></div>
+      <div class="stat-sub">Active cooking & ready tickets</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">🪑</div>
+    <div class="stat-details">
+      <h4>Table Occupancy</h4>
+      <div class="stat-value"><%= stats.tableStats.occupancyRate %>%</div>
+      <div class="stat-sub"><%= stats.tableStats.occupied %> of <%= stats.tableStats.total %> tables occupied</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon <%= stats.lowStockAlerts.length > 0 ? 'red' : 'green' %>">
+      <%= stats.lowStockAlerts.length > 0 ? '⚠️' : '📦' %>
+    </div>
+    <div class="stat-details">
+      <h4>Stock Alerts</h4>
+      <div class="stat-value"><%= stats.lowStockAlerts.length %></div>
+      <div class="stat-sub"><%= stats.lowStockAlerts.length > 0 ? 'Items below threshold' : 'All ingredients healthy' %></div>
+    </div>
+  </div>
+</div>
+
+<!-- Low Stock Warnings Section (if any) -->
+<% if (stats.lowStockAlerts.length > 0) { %>
+  <div class="admin-card" style="border-left: 5px solid #ef4444;">
+    <div class="admin-card-header" style="background: #fff5f5;">
+      <div class="admin-card-title" style="color: #b91c1c; display: flex; align-items: center; gap: 8px;">
+        <span>⚠️ Urgent Low Stock Alert</span>
+        <span class="badge badge-cancelled"><%= stats.lowStockAlerts.length %> Items Low</span>
+      </div>
+      <a href="/admin/inventory" class="btn btn-sm btn-outline">Manage All Stock →</a>
+    </div>
+    <div class="admin-card-body" style="padding: 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ingredient Name</th>
+            <th>Category</th>
+            <th>Current Quantity</th>
+            <th>Min Threshold</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stats.lowStockAlerts.forEach(item => { %>
+            <tr>
+              <td><strong><%= item.item_name %></strong></td>
+              <td><%= item.category %></td>
+              <td style="color: #dc2626; font-weight: 700;"><%= item.quantity %> <%= item.unit %></td>
+              <td><%= item.min_threshold %> <%= item.unit %></td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="openRestockModal(<%= item.id %>, '<%= item.item_name.replace(/'/g, "\\'") %>', '<%= item.unit %>')">
+                  + Restock
+                </button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px;">
+  <!-- Recent Orders Card -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">Recent Restaurant Orders</div>
+      <a href="/admin/orders" class="btn btn-sm btn-secondary">View Kitchen POS →</a>
+    </div>
+    <div class="admin-card-body" style="padding: 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Type</th>
+            <th>Guest / Table</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stats.recentOrders.forEach(o => { %>
+            <tr>
+              <td><strong><%= o.order_number %></strong></td>
+              <td><span style="text-transform: capitalize;"><%= o.order_type %></span></td>
+              <td><%= o.table_number ? `Table #${o.table_number}` : o.customer_name %></td>
+              <td style="font-weight: 700;">$<%= o.total_amount.toFixed(2) %></td>
+              <td>
+                <span class="badge badge-<%= o.status %>"><%= o.status.replace('-', ' ') %></span>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top Dishes Ranking -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">Top Selling Dishes</div>
+      <a href="/admin/menu" class="btn btn-sm btn-secondary">Menu Items →</a>
+    </div>
+    <div class="admin-card-body" style="padding: 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Dish</th>
+            <th>Units Sold</th>
+            <th>Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stats.popularItems.forEach(item => { %>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <% if (item.image_url) { %>
+                    <img src="<%= item.image_url %>" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
+                  <% } %>
+                  <strong><%= item.name %></strong>
+                </div>
+              </td>
+              <td style="font-weight: 700;"><%= item.units_sold %></td>
+              <td style="color: var(--primary); font-weight: 800;">$<%= item.total_generated.toFixed(2) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Restock Inventory Modal -->
+<div id="restockModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Restock Inventory</h3>
+      <button class="modal-close" onclick="closeModal('restockModal')">&times;</button>
+    </div>
+    <form id="restockForm" onsubmit="submitRestock(event)">
+      <div style="margin-bottom: 16px;">
+        Restocking ingredient: <strong id="restockItemName" style="color: var(--primary);"></strong>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="restockQuantity">
+          Additional Quantity to Add (<span id="restockUnitLabel"></span>) *
+        </label>
+        <input type="number" step="0.1" id="restockQuantity" class="form-control" placeholder="e.g. 10.0" required autofocus>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('restockModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm Restock</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('../../partials/admin-footer') %>
