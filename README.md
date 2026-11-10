@@ -6,6 +6,42 @@ Designed to handle real-time restaurant operations including table booking with 
 
 ---
 
+## 📸 Application Screenshots & UI Showcase
+
+### 1. 📊 Executive Admin Dashboard & Real-Time Analytics
+Monitor daily sales, active kitchen orders, table occupancy rate, low-stock warnings, and top-selling dishes.
+![Admin Dashboard](./screenshots/01_Admin_Dashboard.png)
+
+### 2. 🍳 Kitchen POS & Live Order Lifecycle
+Kitchen staff can view incoming tickets, see dine-in table numbers, review special notes, and advance status in real time.
+![Kitchen POS Orders](./screenshots/02_Kitchen_POS_Orders.png)
+
+### 3. 🪑 Visual Table Floor Plan & Live Seating
+Interactive visual map of all tables with color-coded status (Available, Occupied, Reserved) and one-click guest seating.
+![Table Floor Plan](./screenshots/03_Table_Floor_Plan.png)
+
+### 4. 🌐 Bistro Customer Landing Page
+Modern responsive landing page showcasing culinary highlights, chef's specials, and quick reservation CTA.
+![Customer Home Page](./screenshots/04_Customer_Home_Page.png)
+
+### 5. 📋 Filterable Food Menu with Instant Search
+Browse dishes by category (Starters, Pizzas, Burgers, Mains, Desserts, Beverages) with live keyword search and "+ Add to Cart".
+![Food Menu Catalog](./screenshots/05_Food_Menu_Catalog.png)
+
+### 6. 📅 Collision-Free Table Reservation System
+Real-time availability calculation based on party size and 90-minute dining windows to prevent double booking.
+![Table Reservation](./screenshots/06_Table_Reservation.png)
+
+### 7. 🛒 Online Order & Dine-In Checkout
+Cart review with quantity adjustments, dine-in table selector, customer details, and order submission.
+![Order Checkout](./screenshots/07_Online_Order_Checkout.png)
+
+### 8. 🔍 Real-Time Customer Order Status Stepper
+Live tracking timeline (Order Placed ➔ In Kitchen ➔ Ready ➔ Served) with itemized receipt and payment status.
+![Live Order Tracker](./screenshots/08_Live_Order_Tracker.png)
+
+---
+
 ## 🌟 Key Features
 
 ### 1. 📋 Menu Operations & Catalog
